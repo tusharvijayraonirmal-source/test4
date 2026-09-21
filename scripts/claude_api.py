@@ -197,19 +197,36 @@ by the applicable skill instructions.
         ],
     )
 
-    text = response.content[0].text.strip()
+    text_parts = []
+
+    for block in response.content:
+        if getattr(block, "type", None) == "text":
+            text_parts.append(block.text)
+
+    text = "\n".join(text_parts).strip()
+
+    if not text:
+        raise RuntimeError(
+            "Claude returned no text content. "
+            f"Response blocks: "
+            f"{[getattr(b, 'type', type(b).__name__) for b in response.content]}"
+        )
+
+    # Remove Markdown JSON fences if Claude returns them
+    if text.startswith("```json"):
+        text = text[len("```json"):].strip()
 
     if text.startswith("```"):
-        text = text.replace("```json", "")
-        text = text.replace("```", "")
-        text = text.strip()
+        text = text[3:].strip()
+
+    if text.endswith("```"):
+        text = text[:-3].strip()
 
     try:
         review = json.loads(text)
-
     except json.JSONDecodeError as exc:
         print("Claude returned invalid JSON:")
-        print(text)
+        print(text[:5000])
 
         raise RuntimeError(
             "Claude response was not valid JSON."
