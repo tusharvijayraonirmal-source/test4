@@ -2,3 +2,5 @@ def sub():
    print("hello")
 det a():
    prinr("a")
+def sum():
+  print("sumup")
