@@ -3,4 +3,4 @@ def sub():
 det a():
    prinr("a")
 def sum():
-  print("sumup")
+  print("sumup always")
