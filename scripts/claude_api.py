@@ -6,6 +6,7 @@ import logging
 from pathlib import Path
 
 import anthropic
+from json_repair import repair_json
 
 logger = logging.getLogger(__name__)
 
@@ -224,12 +225,19 @@ by the applicable skill instructions.
 
     try:
         review = json.loads(text)
-    except json.JSONDecodeError as exc:
-        print("Claude returned invalid JSON:")
-        print(text[:5000])
-
-        raise RuntimeError(
-            "Claude response was not valid JSON."
-        ) from exc
+    except json.JSONDecodeError:
+        logger.warning(
+            "Primary JSON parse failed, "
+            "attempting repair..."
+        )
+        try:
+            repaired = repair_json(text)
+            review = json.loads(repaired)
+        except Exception as exc:
+            print("Claude returned invalid JSON:")
+            print(text[:5000])
+            raise RuntimeError(
+                "Claude response was not valid JSON."
+            ) from exc
 
     return review
