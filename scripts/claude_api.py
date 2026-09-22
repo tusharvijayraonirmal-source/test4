@@ -189,7 +189,10 @@ by the applicable skill instructions.
 
     response = client.messages.create(
         model=MODEL,
-        max_tokens=4096,
+        max_tokens=8192,
+        thinking={
+        "type": "disabled"
+    },
         messages=[
             {
                 "role": "user",
